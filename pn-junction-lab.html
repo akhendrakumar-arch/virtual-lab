@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Semiconductor & PN Junction Diode — Animated Virtual Lab</title>
+<style>
+:root{
+  --bg:#f5f7fb; --panel:#ffffff; --ink:#14213d; --muted:#5b667a;
+  --accent:#2563eb; --accent2:#7c3aed; --good:#0f9d58; --warn:#d97706;
+  --danger:#d93025; --line:#d9e1ee; --electron:#1976d2; --hole:#e53935;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; font-family:Inter,Segoe UI,Arial,sans-serif; background:var(--bg);
+  color:var(--ink); line-height:1.5;
+}
+header{
+  background:linear-gradient(120deg,#14213d,#244a8f);
+  color:#fff; padding:24px 5vw 18px; box-shadow:0 3px 14px rgba(0,0,0,.15);
+}
+header h1{margin:0 0 6px;font-size:clamp(24px,3vw,38px)}
+header p{margin:0;color:#dbe7ff}
+nav{
+  display:flex; gap:8px; flex-wrap:wrap; padding:12px 5vw; position:sticky; top:0;
+  background:#fff; z-index:20; border-bottom:1px solid var(--line);
+}
+nav button{
+  border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:999px;
+  padding:9px 14px; font-weight:700; cursor:pointer;
+}
+nav button.active{background:var(--accent);color:white;border-color:var(--accent)}
+main{max-width:1200px;margin:auto;padding:20px}
+.section{display:none}.section.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.card{
+  background:var(--panel); border:1px solid var(--line); border-radius:16px;
+  box-shadow:0 3px 14px rgba(20,33,61,.06); padding:18px;
+}
+.col6{grid-column:span 6}.col12{grid-column:span 12}.col4{grid-column:span 4}.col8{grid-column:span 8}
+@media(max-width:850px){.col6,.col4,.col8{grid-column:span 12}}
+h2,h3{margin-top:0}
+.note{
+  background:#eef5ff;border-left:4px solid var(--accent);padding:10px 12px;border-radius:8px;
+}
+.legend{display:flex;gap:15px;flex-wrap:wrap;color:var(--muted);font-size:14px}
+.dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.e{background:var(--electron)} .h{background:var(--hole)} .ionp{background:#6a1b9a}.ionn{background:#ef6c00}
+canvas,svg{width:100%;height:auto;background:#fbfdff;border:1px solid var(--line);border-radius:12px}
+.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.controls label{font-weight:700}
+input[type=range]{width:min(340px,70vw)}
+.value{
+  display:inline-block;min-width:88px;padding:6px 10px;background:#eff4ff;border-radius:8px;
+  font-variant-numeric:tabular-nums;font-weight:800
+}
+.btn{
+  border:0;border-radius:10px;padding:9px 13px;background:var(--accent);color:#fff;font-weight:800;cursor:pointer
+}
+.btn.secondary{background:#475569}.btn.good{background:var(--good)}.btn.warn{background:var(--warn)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{border:1px solid var(--line);padding:8px;text-align:center}
+th{background:#edf3ff}
+.metric{font-size:28px;font-weight:900;color:var(--accent)}
+.small{font-size:13px;color:var(--muted)}
+.badge{padding:4px 8px;border-radius:999px;background:#eef2ff;font-size:12px;font-weight:800}
+hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+.knee{color:var(--danger);font-weight:800}
+footer{padding:24px;text-align:center;color:var(--muted)}
+.flow{animation:dash 1s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-20}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Semiconductor Materials & PN Junction Diode</h1>
+  <p>Animated concept visualizer + interactive V–I characteristics virtual laboratory</p>
+</header>
+
+<nav>
+  <button class="tab active" data-target="intro">1. Semiconductor Basics</button>
+  <button class="tab" data-target="ntype">2. N-Type</button>
+  <button class="tab" data-target="ptype">3. P-Type</button>
+  <button class="tab" data-target="junction">4. PN Junction</button>
+  <button class="tab" data-target="bias">5. Biasing</button>
+  <button class="tab" data-target="lab">6. V–I Experiment</button>
+  <button class="tab" data-target="quiz">7. Quick Check</button>
+</nav>
+
+<main>
+
+<section id="intro" class="section active">
+<div class="grid">
+  <div class="card col6">
+    <h2>Intrinsic Semiconductor</h2>
+    <p>Pure silicon or germanium behaves as a semiconductor. At room temperature, a small number of covalent bonds break and create free electrons and holes.</p>
+    <div class="legend">
+      <span><span class="dot e"></span>Electron</span>
+      <span><span class="dot h"></span>Hole</span>
+    </div>
+    <canvas id="intrinsicCanvas" width="560" height="330"></canvas>
+    <div class="controls">
+      <button class="btn" onclick="intrinsicRunning=!intrinsicRunning">Run / Pause</button>
+      <button class="btn secondary" onclick="resetIntrinsic()">Reset</button>
+    </div>
+  </div>
+  <div class="card col6">
+    <h2>Key Idea</h2>
+    <div class="note">
+      <b>Electron–hole pair generation:</b> thermal energy can free a valence electron. The missing electron in the bond behaves like a positively charged <b>hole</b>.
+    </div>
+    <h3 style="margin-top:18px">Classification</h3>
+    <table>
+      <tr><th>Material</th><th>Majority Carrier</th><th>Minority Carrier</th></tr>
+      <tr><td>Intrinsic</td><td>Electrons = Holes</td><td>Electrons = Holes</td></tr>
+      <tr><td>N-Type</td><td>Electrons</td><td>Holes</td></tr>
+      <tr><td>P-Type</td><td>Holes</td><td>Electrons</td></tr>
+    </table>
+  </div>
+</div>
+</section>
+
+<section id="ntype" class="section">
+<div class="grid">
+  <div class="card col8">
+    <h2>N-Type Semiconductor Animation</h2>
+    <p>A pentavalent donor atom such as phosphorus contributes one extra electron after forming four covalent bonds with silicon.</p>
+    <canvas id="nCanvas" width="760" height="380"></canvas>
+    <div class="controls">
+      <button class="btn" onclick="nRunning=!nRunning">Run / Pause</button>
+      <label>Electric field:</label>
+      <input id="nField" type="range" min="0" max="100" value="55">
+      <span class="value" id="nFieldVal">55%</span>
+    </div>
+  </div>
+  <div class="card col4">
+    <h3>N-Type Summary</h3>
+    <p><b>Dopant:</b> Pentavalent donor</p>
+    <p><b>Examples:</b> P, As, Sb</p>
+    <p><b>Majority carriers:</b> Electrons</p>
+    <p><b>Minority carriers:</b> Holes</p>
+    <p><b>Ionized donor:</b> Fixed positive ion</p>
+    <div class="note">Conventional current direction is opposite to electron drift direction.</div>
+  </div>
+</div>
+</section>
+
+<section id="ptype" class="section">
+<div class="grid">
+  <div class="card col8">
+    <h2>P-Type Semiconductor Animation</h2>
+    <p>A trivalent acceptor atom such as boron forms only three complete covalent bonds, producing a vacancy that behaves as a hole.</p>
+    <canvas id="pCanvas" width="760" height="380"></canvas>
+    <div class="controls">
+      <button class="btn" onclick="pRunning=!pRunning">Run / Pause</button>
+      <label>Electric field:</label>
+      <input id="pField" type="range" min="0" max="100" value="55">
+      <span class="value" id="pFieldVal">55%</span>
+    </div>
+  </div>
+  <div class="card col4">
+    <h3>P-Type Summary</h3>
+    <p><b>Dopant:</b> Trivalent acceptor</p>
+    <p><b>Examples:</b> B, Al, Ga</p>
+    <p><b>Majority carriers:</b> Holes</p>
+    <p><b>Minority carriers:</b> Electrons</p>
+    <p><b>Ionized acceptor:</b> Fixed negative ion</p>
+    <div class="note">Hole motion represents successive movement of valence electrons into nearby vacancies.</div>
+  </div>
+</div>
+</section>
+
+<section id="junction" class="section">
+<div class="grid">
+  <div class="card col8">
+    <h2>Formation of a PN Junction</h2>
+    <canvas id="pnCanvas" width="820" height="400"></canvas>
+    <div class="controls">
+      <button class="btn" onclick="pnRunning=!pnRunning">Run / Pause</button>
+      <button class="btn secondary" onclick="resetPN()">Restart Formation</button>
+      <label>Stage:</label><span class="value" id="pnStage">Diffusion</span>
+    </div>
+  </div>
+  <div class="card col4">
+    <h3>What Happens?</h3>
+    <p>1. Electrons diffuse from N to P.</p>
+    <p>2. Holes diffuse from P to N.</p>
+    <p>3. Recombination leaves fixed ions near the junction.</p>
+    <p>4. A <b>depletion region</b> is created.</p>
+    <p>5. The built-in electric field opposes further diffusion.</p>
+    <div class="note">The depletion region contains very few mobile carriers.</div>
+  </div>
+</div>
+</section>
+
+<section id="bias" class="section">
+<div class="grid">
+  <div class="card col6">
+    <h2>Forward Bias</h2>
+    <svg viewBox="0 0 700 330" aria-label="Forward bias animation">
+      <rect x="170" y="90" width="170" height="130" rx="10" fill="#ffe5e5"/>
+      <rect x="360" y="90" width="170" height="130" rx="10" fill="#e6f0ff"/>
+      <rect id="depF" x="330" y="90" width="40" height="130" fill="#fff4c2" stroke="#d97706"/>
+      <text x="245" y="120" font-size="26" font-weight="700">P</text>
+      <text x="445" y="120" font-size="26" font-weight="700">N</text>
+      <text x="310" y="245" font-size="15">depletion</text>
+      <line x1="95" y1="155" x2="170" y2="155" stroke="#14213d" stroke-width="4"/>
+      <line x1="530" y1="155" x2="605" y2="155" stroke="#14213d" stroke-width="4"/>
+      <circle cx="75" cy="155" r="30" fill="#fff" stroke="#14213d" stroke-width="3"/>
+      <text x="62" y="165" font-size="26" font-weight="800">+</text>
+      <circle cx="625" cy="155" r="30" fill="#fff" stroke="#14213d" stroke-width="3"/>
+      <text x="615" y="165" font-size="26" font-weight="800">−</text>
+      <path d="M145,55 C260,20 440,20 555,55" fill="none" stroke="#1976d2" stroke-width="5" stroke-dasharray="10 10" class="flow"/>
+      <polygon points="555,55 535,45 538,65" fill="#1976d2"/>
+    </svg>
+    <div class="controls">
+      <label>Forward voltage:</label>
+      <input id="vf" type="range" min="0" max="100" value="60">
+      <span class="value" id="vfVal">0.60 V</span>
+    </div>
+    <p id="forwardText" class="note">Barrier is reduced; majority carriers cross the junction more easily.</p>
+  </div>
+  <div class="card col6">
+    <h2>Reverse Bias</h2>
+    <svg viewBox="0 0 700 330" aria-label="Reverse bias animation">
+      <rect x="170" y="90" width="170" height="130" rx="10" fill="#ffe5e5"/>
+      <rect x="360" y="90" width="170" height="130" rx="10" fill="#e6f0ff"/>
+      <rect id="depR" x="315" y="90" width="70" height="130" fill="#fff4c2" stroke="#d97706"/>
+      <text x="245" y="120" font-size="26" font-weight="700">P</text>
+      <text x="445" y="120" font-size="26" font-weight="700">N</text>
+      <line x1="95" y1="155" x2="170" y2="155" stroke="#14213d" stroke-width="4"/>
+      <line x1="530" y1="155" x2="605" y2="155" stroke="#14213d" stroke-width="4"/>
+      <circle cx="75" cy="155" r="30" fill="#fff" stroke="#14213d" stroke-width="3"/>
+      <text x="65" y="165" font-size="26" font-weight="800">−</text>
+      <circle cx="625" cy="155" r="30" fill="#fff" stroke="#14213d" stroke-width="3"/>
+      <text x="612" y="165" font-size="26" font-weight="800">+</text>
+      <path d="M545,55 C445,20 255,20 155,55" fill="none" stroke="#e53935" stroke-width="5" stroke-dasharray="10 10" class="flow"/>
+      <polygon points="155,55 176,45 174,66" fill="#e53935"/>
+    </svg>
+    <div class="controls">
+      <label>Reverse voltage:</label>
+      <input id="vr" type="range" min="0" max="100" value="50">
+      <span class="value" id="vrVal">5.0 V</span>
+    </div>
+    <p class="note">Barrier height and depletion width increase. Only a very small reverse saturation current flows before breakdown.</p>
+  </div>
+</div>
+</section>
+
+<section id="lab" class="section">
+<div class="grid">
+  <div class="card col6">
+    <h2>PN Junction Diode V–I Characteristics Experiment</h2>
+    <p><span class="badge">Virtual Instrumentation</span></p>
+    <svg viewBox="0 0 760 360">
+      <line x1="90" y1="170" x2="180" y2="170" stroke="#14213d" stroke-width="4"/>
+      <rect x="180" y="125" width="80" height="90" rx="12" fill="#eef2ff" stroke="#14213d" stroke-width="3"/>
+      <text x="193" y="178" font-size="22" font-weight="800">DC</text>
+      <line x1="260" y1="170" x2="350" y2="170" stroke="#14213d" stroke-width="4"/>
+      <circle cx="385" cy="170" r="34" fill="#fff" stroke="#14213d" stroke-width="3"/>
+      <text x="373" y="178" font-size="22" font-weight="800">A</text>
+      <line x1="419" y1="170" x2="470" y2="170" stroke="#14213d" stroke-width="4"/>
+      <polygon points="470,135 470,205 530,170" fill="#fff" stroke="#14213d" stroke-width="4"/>
+      <line x1="535" y1="135" x2="535" y2="205" stroke="#14213d" stroke-width="5"/>
+      <line x1="535" y1="170" x2="650" y2="170" stroke="#14213d" stroke-width="4"/>
+      <path d="M650,170 L650,280 L90,280 L90,170" fill="none" stroke="#14213d" stroke-width="4"/>
+      <circle cx="505" cy="275" r="34" fill="#fff" stroke="#14213d" stroke-width="3"/>
+      <text x="493" y="283" font-size="22" font-weight="800">V</text>
+      <line x1="505" y1="241" x2="505" y2="205" stroke="#14213d" stroke-width="3"/>
+      <line x1="505" y1="309" x2="505" y2="325" stroke="#14213d" stroke-width="3"/>
+      <text x="455" y="110" font-size="18" font-weight="700">Diode</text>
+    </svg>
+
+    <div class="controls">
+      <button id="modeBtn" class="btn good" onclick="toggleMode()">Mode: Forward Bias</button>
+      <label>Supply:</label>
+      <input id="supply" type="range" min="0" max="100" value="0">
+      <span class="value" id="supplyVal">0.00 V</span>
+    </div>
+    <div class="controls">
+      <button class="btn" onclick="recordPoint()">Record Reading</button>
+      <button class="btn warn" onclick="clearReadings()">Clear Table</button>
+    </div>
+    <hr>
+    <div class="grid">
+      <div class="card col4"><div class="small">Diode Voltage</div><div class="metric" id="meterV">0.000 V</div></div>
+      <div class="card col4"><div class="small">Diode Current</div><div class="metric" id="meterI">0.000 mA</div></div>
+      <div class="card col4"><div class="small">Dynamic Resistance</div><div class="metric" id="meterR">—</div></div>
+    </div>
+  </div>
+
+  <div class="card col6">
+    <h2>Live V–I Curve</h2>
+    <canvas id="graph" width="700" height="480"></canvas>
+    <p class="small">The model is an educational approximation of a silicon PN diode. Forward current rises rapidly near the knee region.</p>
+  </div>
+
+  <div class="card col12">
+    <h2>Observation Table</h2>
+    <div style="overflow:auto">
+    <table id="obsTable">
+      <thead><tr><th>S.No</th><th>Bias</th><th>Applied V (V)</th><th>Diode V (V)</th><th>Current</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    </div>
+    <div class="note" style="margin-top:14px">
+      <b>Suggested real-lab components:</b> PN diode (e.g. 1N400x or 1N4148), regulated DC supply, 1 kΩ series resistor, milliammeter / digital multimeter, voltmeter, breadboard and patch cords.
+    </div>
+  </div>
+
+  <div class="card col12">
+    <h2>Experiment Procedure</h2>
+    <ol>
+      <li>Connect the diode in <b>forward bias</b>: P-side/anode to positive supply and N-side/cathode to negative through a current-limiting resistor.</li>
+      <li>Increase supply gradually and record diode voltage and current.</li>
+      <li>Plot forward current versus diode voltage and identify the knee region.</li>
+      <li>Reverse the diode polarity for <b>reverse bias</b>.</li>
+      <li>Increase reverse voltage carefully and record the small reverse current. Do not exceed the device rating in a real laboratory.</li>
+      <li>Plot reverse current versus reverse voltage and compare both regions.</li>
+    </ol>
+  </div>
+</div>
+</section>
+
+<section id="quiz" class="section">
+<div class="grid">
+  <div class="card col12">
+    <h2>Quick Concept Check</h2>
+    <div id="quizBox"></div>
+    <button class="btn" onclick="checkQuiz()">Check Answers</button>
+    <span id="score" class="value" style="margin-left:10px">Score: —</span>
+  </div>
+</div>
+</section>
+
+</main>
+
+<footer>Interactive teaching module for semiconductor fundamentals and PN-junction diode laboratory practice.</footer>
+
+<script>
+// ---------- Navigation ----------
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); document.getElementById(b.dataset.target).classList.add('active');
+}));
+
+// ---------- Utility ----------
+function circle(ctx,x,y,r,c,label=''){
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=c;ctx.fill();
+  if(label){ctx.fillStyle='#fff';ctx.font='bold 12px Arial';ctx.textAlign='center';ctx.fillText(label,x,y+4)}
+}
+function arrow(ctx,x1,y1,x2,y2,c){
+  const a=Math.atan2(y2-y1,x2-x1),h=10;
+  ctx.strokeStyle=c;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-h*Math.cos(a-Math.PI/6),y2-h*Math.sin(a-Math.PI/6));
+  ctx.lineTo(x2-h*Math.cos(a+Math.PI/6),y2-h*Math.sin(a+Math.PI/6));ctx.closePath();ctx.fillStyle=c;ctx.fill();
+}
+
+// ---------- Intrinsic ----------
+const ic=document.getElementById('intrinsicCanvas'), ict=ic.getContext('2d');
+let intrinsicRunning=true,t0=0;
+function resetIntrinsic(){t0=0}
+function drawIntrinsic(){
+  ict.clearRect(0,0,ic.width,ic.height);
+  ict.fillStyle='#fbfdff';ict.fillRect(0,0,ic.width,ic.height);
+  // lattice
+  for(let y=60;y<=270;y+=70){
+    for(let x=70;x<=490;x+=70){
+      circle(ict,x,y,16,'#607d8b','Si');
+      if(x<490){ict.strokeStyle='#a9b4c3';ict.lineWidth=2;ict.beginPath();ict.moveTo(x+16,y);ict.lineTo(x+54,y);ict.stroke()}
+      if(y<270){ict.beginPath();ict.moveTo(x,y+16);ict.lineTo(x,y+54);ict.stroke()}
+    }
+  }
+  const phase=t0%220;
+  // animated free electron and hole
+  let ex=145+(phase/220)*300;
+  circle(ict,ex,42,9,'#1976d2','−');
+  circle(ict,280,200,10,'#e53935','+');
+  arrow(ict,210,28,370,28,'#1976d2');
+  ict.fillStyle='#14213d';ict.font='15px Arial';ict.fillText('Thermal energy creates an electron–hole pair',120,315);
+  if(intrinsicRunning)t0+=1.2;
+  requestAnimationFrame(drawIntrinsic);
+}
+drawIntrinsic();
+
+// ---------- N type ----------
+const nc=document.getElementById('nCanvas'),nct=nc.getContext('2d');
+let nRunning=true,nt=0;
+document.getElementById('nField').addEventListener('input',e=>{
+  document.getElementById('nFieldVal').textContent=e.target.value+'%';
+});
+function drawN(){
+  nct.clearRect(0,0,nc.width,nc.height);
+  nct.fillStyle='#f7fbff';nct.fillRect(0,0,nc.width,nc.height);
+  for(let y=90;y<=300;y+=70){
+    for(let x=90;x<=650;x+=70){
+      let dop=(x===370 && y===160);
+      circle(nct,x,y,17,dop?'#ef6c00':'#607d8b',dop?'P':'Si');
+    }
+  }
+  nct.fillStyle='#14213d';nct.font='bold 17px Arial';nct.fillText('Donor atom provides one extra electron',230,35);
+  circle(nct,370,160,24,'#ef6c00','P+');
+  let field=+document.getElementById('nField').value/100;
+  for(let i=0;i<7;i++){
+    let x=(90+i*95+(nt*(1+field*3)))%700+20, y=55+(i%3)*105;
+    circle(nct,x,y,10,'#1976d2','−');
+  }
+  arrow(nct,590,45,690,45,'#e53935');
+  nct.fillStyle='#e53935';nct.fillText('Conventional current',515,28);
+  arrow(nct,690,335,590,335,'#1976d2');
+  nct.fillStyle='#1976d2';nct.fillText('Electron drift',590,360);
+  if(nRunning)nt+=0.9;
+  requestAnimationFrame(drawN);
+} drawN();
+
+// ---------- P type ----------
+const pc=document.getElementById('pCanvas'),pct=pc.getContext('2d');
+let pRunning=true,pt=0;
+document.getElementById('pField').addEventListener('input',e=>{
+  document.getElementById('pFieldVal').textContent=e.target.value+'%';
+});
+function drawP(){
+  pct.clearRect(0,0,pc.width,pc.height);
+  pct.fillStyle='#fffafa';pct.fillRect(0,0,pc.width,pc.height);
+  for(let y=90;y<=300;y+=70){
+    for(let x=90;x<=650;x+=70){
+      let dop=(x===370 && y===160);
+      circle(pct,x,y,17,dop?'#6a1b9a':'#607d8b',dop?'B':'Si');
+    }
+  }
+  circle(pct,370,160,24,'#6a1b9a','B−');
+  pct.fillStyle='#14213d';pct.font='bold 17px Arial';pct.fillText('Acceptor atom creates a mobile hole',245,35);
+  let field=+document.getElementById('pField').value/100;
+  for(let i=0;i<7;i++){
+    let x=(650-i*90+pt*(1+field*3))%700+20, y=55+(i%3)*105;
+    circle(pct,x,y,10,'#e53935','+');
+  }
+  arrow(pct,590,335,690,335,'#e53935');
+  pct.fillStyle='#e53935';pct.fillText('Hole / current direction',540,360);
+  if(pRunning)pt+=0.7;
+  requestAnimationFrame(drawP);
+} drawP();
+
+// ---------- PN Junction Formation ----------
+const pnc=document.getElementById('pnCanvas'),pnx=pnc.getContext('2d');
+let pnRunning=true,pnt=0;
+function resetPN(){pnt=0}
+function drawPN(){
+  pnx.clearRect(0,0,pnc.width,pnc.height);
+  pnx.fillStyle='#ffe6e6';pnx.fillRect(0,0,pnc.width/2,pnc.height);
+  pnx.fillStyle='#e7f0ff';pnx.fillRect(pnc.width/2,0,pnc.width/2,pnc.height);
+  pnx.fillStyle='#14213d';pnx.font='bold 35px Arial';pnx.fillText('P',160,55);pnx.fillText('N',630,55);
+  let stage=Math.min(1,pnt/300);
+  let dep=20+stage*120;
+  pnx.fillStyle='rgba(255,240,170,.82)';pnx.fillRect(410-dep/2,0,dep,pnc.height);
+  // fixed ions near junction
+  if(stage>.25){
+    for(let y=100;y<340;y+=55){
+      circle(pnx,410-dep/3,y,11,'#6a1b9a','−');
+      circle(pnx,410+dep/3,y,11,'#ef6c00','+');
+    }
+  }
+  // carriers moving toward junction at early stage
+  for(let i=0;i<6;i++){
+    let y=95+i*48;
+    let hx=120+i*28 + (stage<.75?pnt*0.55:120);
+    let ex=700-i*25 - (stage<.75?pnt*0.55:120);
+    circle(pnx,Math.min(hx,390-dep/2),y,9,'#e53935','+');
+    circle(pnx,Math.max(ex,430+dep/2),y,9,'#1976d2','−');
+  }
+  if(stage<.33) document.getElementById('pnStage').textContent='Diffusion';
+  else if(stage<.72) document.getElementById('pnStage').textContent='Recombination';
+  else document.getElementById('pnStage').textContent='Equilibrium';
+  pnx.fillStyle='#14213d';pnx.font='16px Arial';pnx.fillText('Depletion region',350,385);
+  if(stage>.55){
+    arrow(pnx,470,70,350,70,'#d97706');
+    pnx.fillStyle='#d97706';pnx.fillText('Built-in electric field',318,95);
+  }
+  if(pnRunning)pnt+=0.7;
+  requestAnimationFrame(drawPN);
+} drawPN();
+
+// ---------- Bias controls ----------
+document.getElementById('vf').addEventListener('input',e=>{
+  const v=(+e.target.value/100).toFixed(2);
+  document.getElementById('vfVal').textContent=v+' V';
+  const w=70-50*(+e.target.value/100);
+  document.getElementById('depF').setAttribute('x',350-w/2);
+  document.getElementById('depF').setAttribute('width',w);
+  document.getElementById('forwardText').innerHTML =
+    (+v>=0.6 ? '<span class="knee">Near/above silicon knee region:</span> current rises rapidly.' :
+               'Barrier is reduced; majority carriers cross the junction more easily.');
+});
+document.getElementById('vr').addEventListener('input',e=>{
+  const v=(+e.target.value/10).toFixed(1);
+  document.getElementById('vrVal').textContent=v+' V';
+  const w=60+80*(+e.target.value/100);
+  document.getElementById('depR').setAttribute('x',350-w/2);
+  document.getElementById('depR').setAttribute('width',w);
+});
+
+// ---------- Virtual Lab ----------
+let forward=true, readings=[];
+const supply=document.getElementById('supply');
+const meterV=document.getElementById('meterV'), meterI=document.getElementById('meterI'), meterR=document.getElementById('meterR');
+function diodeModel(){
+  let raw=+supply.value/100;
+  if(forward){
+    // applied range 0..1.0 V; simple educational diode approximation
+    let v=raw;
+    let I = v < 0.45 ? 0.01*Math.exp((v-.45)/.10) :
+            v < 0.60 ? 0.03*Math.exp((v-.45)/.07) :
+            0.25*Math.exp((v-.60)/.055);
+    I=Math.min(I,35); // mA cap
+    return {applied:v, v:v, i:I, unit:'mA'};
+  }else{
+    let applied=raw*20; // 0..20 V reverse
+    let I=0.8 + 0.05*applied; // microamps, no breakdown shown
+    return {applied:-applied, v:-applied, i:-I, unit:'µA'};
+  }
+}
+function updateMeters(){
+  let d=diodeModel();
+  document.getElementById('supplyVal').textContent=forward?Math.abs(d.applied).toFixed(2)+' V':Math.abs(d.applied).toFixed(1)+' V';
+  meterV.textContent=d.v.toFixed(forward?3:1)+' V';
+  meterI.textContent=forward?d.i.toFixed(3)+' mA':Math.abs(d.i).toFixed(2)+' µA';
+  if(forward && d.i>0.001) meterR.textContent=(d.v/(d.i/1000)).toFixed(0)+' Ω';
+  else meterR.textContent='—';
+  drawGraph();
+}
+supply.addEventListener('input',updateMeters);
+function toggleMode(){
+  forward=!forward; supply.value=0;
+  const b=document.getElementById('modeBtn');
+  b.textContent='Mode: '+(forward?'Forward Bias':'Reverse Bias');
+  b.className='btn '+(forward?'good':'warn');
+  updateMeters();
+}
+function recordPoint(){
+  let d=diodeModel(); readings.push({...d,bias:forward?'Forward':'Reverse'});
+  renderTable(); drawGraph();
+}
+function clearReadings(){readings=[];renderTable();drawGraph()}
+function renderTable(){
+  const tb=document.querySelector('#obsTable tbody'); tb.innerHTML='';
+  readings.forEach((r,i)=>{
+    let tr=document.createElement('tr');
+    let current=r.bias==='Forward'?r.i.toFixed(3)+' mA':Math.abs(r.i).toFixed(2)+' µA';
+    tr.innerHTML=`<td>${i+1}</td><td>${r.bias}</td><td>${Math.abs(r.applied).toFixed(r.bias==='Forward'?2:1)}</td><td>${r.v.toFixed(r.bias==='Forward'?3:1)}</td><td>${current}</td>`;
+    tb.appendChild(tr);
+  });
+}
+const gc=document.getElementById('graph'),g=gc.getContext('2d');
+function drawGraph(){
+  g.clearRect(0,0,gc.width,gc.height);g.fillStyle='#fff';g.fillRect(0,0,gc.width,gc.height);
+  const ox=270,oy=350;
+  // axes
+  g.strokeStyle='#14213d';g.lineWidth=2;g.beginPath();g.moveTo(50,oy);g.lineTo(650,oy);g.moveTo(ox,40);g.lineTo(ox,440);g.stroke();
+  g.fillStyle='#14213d';g.font='14px Arial';g.fillText('Diode Voltage (V)',540,380);
+  g.save();g.translate(25,150);g.rotate(-Math.PI/2);g.fillText('Current',0,0);g.restore();
+  // labels
+  g.fillStyle='#5b667a';g.font='12px Arial';
+  g.fillText('-20',45,370);g.fillText('-10',150,370);g.fillText('0',265,370);g.fillText('0.5',430,370);g.fillText('1.0',625,370);
+  g.fillText('Forward current (mA)',480,60);g.fillText('Reverse current (µA)',65,425);
+  // forward theoretical curve
+  g.strokeStyle='#2563eb';g.lineWidth=3;g.beginPath();
+  for(let k=0;k<=100;k++){
+    let v=k/100, I=v<.45?0.01*Math.exp((v-.45)/.10):v<.60?0.03*Math.exp((v-.45)/.07):0.25*Math.exp((v-.60)/.055);
+    I=Math.min(I,35);
+    let x=ox+v*370, y=oy-I*8;
+    if(k===0)g.moveTo(x,y);else g.lineTo(x,y);
+  }g.stroke();
+  // reverse theoretical
+  g.strokeStyle='#d93025';g.beginPath();
+  for(let k=0;k<=20;k++){
+    let v=-k, I=-(0.8+0.05*k);
+    let x=ox+v*11, y=oy-I*18;
+    if(k===0)g.moveTo(x,y);else g.lineTo(x,y);
+  }g.stroke();
+  // recorded points
+  readings.forEach(r=>{
+    let x,y;
+    if(r.bias==='Forward'){x=ox+r.v*370;y=oy-r.i*8;g.fillStyle='#111827'}
+    else{x=ox+r.v*11;y=oy-r.i*18;g.fillStyle='#111827'}
+    g.beginPath();g.arc(x,y,5,0,Math.PI*2);g.fill();
+  });
+  // live point
+  let d=diodeModel(); g.fillStyle='#7c3aed';
+  let x=forward?ox+d.v*370:ox+d.v*11;
+  let y=forward?oy-d.i*8:oy-d.i*18;
+  g.beginPath();g.arc(x,y,7,0,Math.PI*2);g.fill();
+}
+updateMeters();
+
+// ---------- Quiz ----------
+const quiz=[
+  {q:'1. Majority carrier in N-type material is:',a:['Hole','Electron','Proton'],c:1},
+  {q:'2. Trivalent doping of silicon produces:',a:['P-type','N-type','Intrinsic'],c:0},
+  {q:'3. Under forward bias, depletion width:',a:['Increases','Decreases','Never changes'],c:1},
+  {q:'4. The depletion region mainly contains:',a:['Only free electrons','Only free holes','Fixed ionized donor and acceptor atoms'],c:2},
+  {q:'5. In reverse bias, diode current before breakdown is:',a:['Very large','Very small','Always zero'],c:1}
+];
+const qb=document.getElementById('quizBox');
+quiz.forEach((x,i)=>{
+  let d=document.createElement('div');d.className='card';d.style.margin='10px 0';
+  d.innerHTML='<b>'+x.q+'</b><br>'+x.a.map((z,j)=>`<label style="display:block;margin-top:6px"><input type="radio" name="q${i}" value="${j}"> ${z}</label>`).join('');
+  qb.appendChild(d);
+});
+function checkQuiz(){
+  let s=0;quiz.forEach((x,i)=>{let v=document.querySelector(`input[name=q${i}]:checked`);if(v&&+v.value===x.c)s++});
+  document.getElementById('score').textContent=`Score: ${s}/${quiz.length}`;
+}
+</script>
+</body>
+</html>

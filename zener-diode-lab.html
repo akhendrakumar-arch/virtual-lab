@@ -1,0 +1,920 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Zener Diode — Interactive Lesson & Virtual Regulator Lab</title>
+<meta name="description" content="Interactive Zener diode lesson: PN-junction physics, correct V-I characteristic, shunt regulator, line/load regulation, worked examples, virtual breadboard and quiz.">
+<style>
+:root{
+  --bg:#07111f; --panel:#0e1d31; --panel2:#132640;
+  --text:#eef6ff; --muted:#a9bdd3; --accent:#56d6ff;
+  --accent2:#ffcc66; --ok:#63e6a7; --danger:#ff7b8a;
+  --violet:#b996ff; --wire:#8bb8d9; --border:rgba(255,255,255,.12);
+  --shadow:0 18px 55px rgba(0,0,0,.28); --r:24px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;color:var(--text);line-height:1.65;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  background:
+    radial-gradient(circle at 10% 8%,rgba(86,214,255,.12),transparent 30%),
+    radial-gradient(circle at 88% 12%,rgba(255,204,102,.09),transparent 30%),
+    linear-gradient(180deg,#06101d 0%,#09182a 55%,#07111f 100%);
+}
+button,input,textarea{font:inherit}
+button{color:inherit}
+.container{width:min(1180px,92vw);margin:auto}
+.progress{position:fixed;z-index:100;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+header{min-height:90vh;display:grid;align-items:center;position:relative;overflow:hidden;border-bottom:1px solid var(--border)}
+.hero-grid{display:grid;grid-template-columns:1.06fr .94fr;gap:42px;align-items:center;padding:76px 0}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);
+  border-radius:999px;padding:7px 12px;color:var(--accent);
+  background:rgba(86,214,255,.06);font-size:.86rem;font-weight:800
+}
+.pulse-dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(99,230,167,.55);animation:pulse 1.8s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 14px rgba(99,230,167,0)}100%{box-shadow:0 0 0 0 rgba(99,230,167,0)}}
+h1{font-size:clamp(2.7rem,6vw,5.7rem);line-height:1.01;letter-spacing:-.055em;margin:18px 0}
+.grad{background:linear-gradient(100deg,var(--accent),#d5f7ff 45%,var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:clamp(1.05rem,1.7vw,1.25rem);color:var(--muted);max-width:720px}
+.hero-actions{display:flex;flex-wrap:wrap;gap:11px;margin-top:26px}
+.btn{
+  border:1px solid var(--border);border-radius:14px;padding:11px 16px;cursor:pointer;
+  background:rgba(255,255,255,.05);font-weight:800;transition:.22s transform,.22s background,.22s border-color
+}
+.btn:hover,.btn:focus-visible{transform:translateY(-2px);background:rgba(255,255,255,.10);border-color:rgba(86,214,255,.55)}
+.btn.primary{background:linear-gradient(135deg,#27bfe9,#2478ff);border-color:transparent}
+.btn.ok{background:linear-gradient(135deg,#2ecf88,#18a86c);border-color:transparent;color:#06261a}
+.hero-card{
+  border:1px solid var(--border);border-radius:28px;padding:26px;
+  background:linear-gradient(145deg,rgba(19,38,64,.96),rgba(8,23,40,.92));box-shadow:var(--shadow)
+}
+.hero-card h3{font-size:1.55rem}
+.mini-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;margin-top:16px}
+.mini{padding:15px;border-radius:17px;border:1px solid var(--border);background:rgba(255,255,255,.035)}
+.mini b{display:block;color:var(--accent2);font-size:1.1rem}
+nav.sticky{position:sticky;top:0;z-index:40;background:rgba(5,15,27,.87);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.nav-inner{display:flex;gap:7px;overflow:auto;padding:9px 0}
+.nav-inner a{white-space:nowrap;text-decoration:none;color:var(--muted);padding:8px 11px;border-radius:10px;font-weight:750}
+.nav-inner a:hover{color:var(--text);background:rgba(255,255,255,.06)}
+section{padding:82px 0;scroll-margin-top:58px}
+.section-head{display:flex;justify-content:space-between;gap:28px;align-items:end;margin-bottom:27px}
+.kicker{color:var(--accent);font-weight:900;text-transform:uppercase;letter-spacing:.13em;font-size:.77rem}
+h2{font-size:clamp(2rem,4vw,3.3rem);line-height:1.08;letter-spacing:-.035em;margin:.4rem 0}
+h3{margin:.2rem 0 .9rem;font-size:1.28rem}
+h4{margin:.2rem 0 .6rem}
+.muted{color:var(--muted)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{
+  border:1px solid var(--border);border-radius:24px;padding:24px;
+  background:linear-gradient(145deg,rgba(18,37,62,.95),rgba(9,24,42,.91));
+  box-shadow:0 12px 40px rgba(0,0,0,.16)
+}
+.card.glow{border-color:rgba(86,214,255,.28);background:radial-gradient(circle at 90% 0%,rgba(86,214,255,.08),transparent 34%),linear-gradient(145deg,rgba(18,37,62,.97),rgba(9,24,42,.92))}
+.card.gold{border-color:rgba(255,204,102,.25);background:radial-gradient(circle at 90% 0%,rgba(255,204,102,.08),transparent 34%),linear-gradient(145deg,rgba(18,37,62,.97),rgba(9,24,42,.92))}
+.statement{padding:15px 16px;border-left:4px solid var(--accent);background:rgba(86,214,255,.07);border-radius:0 14px 14px 0;color:#dff7ff}
+.formula{margin:14px 0;padding:14px;text-align:center;border:1px dashed rgba(255,255,255,.2);border-radius:14px;font-size:1.16rem;font-weight:850;background:rgba(0,0,0,.12)}
+.note{padding:12px 14px;border-radius:13px;background:rgba(255,204,102,.09);border:1px solid rgba(255,204,102,.24);color:#ffe5aa}
+.ok-note{padding:12px 14px;border-radius:13px;background:rgba(99,230,167,.08);border:1px solid rgba(99,230,167,.25);color:#dcffeb}
+.warn{padding:12px 14px;border-radius:13px;background:rgba(255,123,138,.08);border:1px solid rgba(255,123,138,.26);color:#ffd2d8}
+.steps{counter-reset:step;display:grid;gap:9px;padding:0}
+.steps li{list-style:none;position:relative;padding:10px 12px 10px 46px;border-radius:12px;background:rgba(255,255,255,.035)}
+.steps li:before{counter-increment:step;content:counter(step);position:absolute;left:10px;top:9px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:#042131;font-weight:900;font-size:.82rem}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;background:rgba(99,230,167,.09);border:1px solid rgba(99,230,167,.25);color:var(--ok);font-size:.76rem;font-weight:900;text-transform:uppercase;letter-spacing:.05em}
+.circuit-wrap{border:1px solid var(--border);border-radius:20px;background:#071421;padding:10px;overflow:hidden}
+svg{width:100%;height:auto;display:block}
+.wire{stroke:var(--wire);stroke-width:4;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.resistor{stroke:#f6d37b;stroke-width:4;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.zener{stroke:#65d6ff;stroke-width:4;fill:none;stroke-linecap:round}
+.label{fill:#edf7ff;font-size:18px;font-weight:800}
+.small-label{fill:#a9bdd3;font-size:14px}
+.axis{stroke:#7d92aa;stroke-width:2}
+.chart-line{stroke:var(--accent);stroke-width:5;fill:none;stroke-linecap:round}
+.current-path{fill:none;stroke-width:4;stroke-dasharray:11 10;animation:dash 1.15s linear infinite}
+.flow-cyan{stroke:var(--accent)} .flow-green{stroke:var(--ok)} .flow-gold{stroke:var(--accent2)}
+@keyframes dash{to{stroke-dashoffset:-42}}
+.current-path.off{opacity:.12;animation:none}
+.controls-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}
+.range-row{display:grid;grid-template-columns:145px 1fr 88px;gap:12px;align-items:center;margin:13px 0}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.value-pill{padding:5px 9px;text-align:center;border-radius:9px;background:rgba(86,214,255,.08);color:var(--accent2);font-weight:850;border:1px solid rgba(86,214,255,.15)}
+.readout{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.metric{padding:12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--border)}
+.metric span{display:block;color:var(--muted);font-size:.78rem}
+.metric strong{font-size:1.13rem;color:var(--accent2)}
+.state{padding:13px 15px;border-radius:15px;margin-top:13px;border:1px solid rgba(99,230,167,.25);background:rgba(99,230,167,.08)}
+.state.bad{border-color:rgba(255,123,138,.28);background:rgba(255,123,138,.08)}
+.state.warn{border-color:rgba(255,204,102,.28);background:rgba(255,204,102,.08)}
+.compare{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center}
+.arrow{font-size:2rem;color:var(--accent)}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 20px}
+.tab{border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.045);padding:10px 13px;cursor:pointer;font-weight:800}
+.tab.active{background:var(--ok);color:#042131;border-color:transparent}
+.pane{display:none}.pane.active{display:block;animation:fadeUp .35s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.learning-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.learn-card{padding:14px;border-radius:17px;border:1px solid var(--border);background:rgba(255,255,255,.035)}
+.learn-card b{display:block;color:var(--accent2)}
+.badge-num{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:#042131;font-weight:900;margin-bottom:8px}
+.obs-wrap{overflow:auto;margin-top:14px}
+table{width:100%;min-width:720px;border-collapse:collapse}
+th,td{border:1px solid rgba(255,255,255,.12);padding:9px;text-align:center}
+th{background:rgba(86,214,255,.08);color:#dff7ff}
+.board-shell{border:1px solid rgba(86,214,255,.24);background:radial-gradient(circle at 5% 0%,rgba(86,214,255,.10),transparent 30%),linear-gradient(145deg,rgba(13,38,62,.98),rgba(6,22,38,.98))}
+.board-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(290px,.75fr);gap:18px;align-items:start}
+.breadboard{border-radius:20px;background:#d8dde2;padding:18px;box-shadow:inset 0 0 26px rgba(0,0,0,.22);min-height:470px;color:#26313c;position:relative;overflow:hidden}
+.bb-rail{height:16px;border-radius:10px;background:repeating-linear-gradient(90deg,#fbfbfb 0 13px,#aeb6bf 14px 16px);position:relative;margin:18px 20px}
+.bb-rail.red:before,.bb-rail.blue:before{content:"";position:absolute;left:0;right:0;top:-7px;height:3px;border-radius:2px}
+.bb-rail.red:before{background:#db5360}.bb-rail.blue:before{background:#377ed8}
+.bb-center{height:250px;margin:20px;border-radius:12px;background:
+ radial-gradient(circle,#7d8790 1.6px,transparent 2px) 0 0/18px 18px,
+ #f6f6f4;position:relative;border:1px solid #b5bbc1}
+.bb-gap{position:absolute;left:0;right:0;top:50%;height:22px;transform:translateY(-50%);background:#d8dde2;border-top:1px solid #adb4bb;border-bottom:1px solid #adb4bb}
+.bb-component{position:absolute;border-radius:999px;background:#d7b37b;border:2px solid #6f522e;height:20px;box-shadow:0 2px 4px rgba(0,0,0,.2)}
+.bb-component:before,.bb-component:after{content:"";position:absolute;top:7px;width:54px;height:3px;background:#555}
+.bb-component:before{right:100%}.bb-component:after{left:100%}
+.bb-zener{position:absolute;width:62px;height:72px}
+.bb-zener:before{content:"▷";font-size:48px;line-height:60px;color:#267da0}
+.bb-wire{position:absolute;height:5px;border-radius:999px;transform-origin:left center;box-shadow:0 2px 3px rgba(0,0,0,.25)}
+.bb-wire.hidden{opacity:.08}
+.instrument{border:1px solid var(--border);border-radius:17px;padding:14px;background:rgba(255,255,255,.04);margin-bottom:12px}
+.display{font-family:"Courier New",monospace;letter-spacing:.07em;background:#a9d9a0;color:#102315;border:4px inset #748f70;border-radius:8px;padding:9px 12px;text-align:right;font-size:1.55rem;font-weight:900}
+.power{border:0;border-radius:11px;padding:9px 13px;font-weight:900;cursor:pointer;background:#434b55}
+.power.on{background:#28b76a;box-shadow:0 0 16px rgba(40,183,106,.38)}
+.connection-list{display:grid;gap:7px;margin-top:10px}
+.connection-btn{width:100%;text-align:left;border:1px solid var(--border);border-radius:11px;background:rgba(255,255,255,.04);padding:9px 11px;cursor:pointer;font-weight:750}
+.connection-btn.done{border-color:rgba(99,230,167,.35);background:rgba(99,230,167,.09);color:#d9ffeb}
+.quiz-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}
+.qcard{padding:18px;border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.035)}
+.options{display:grid;gap:8px;margin-top:11px}.option{text-align:left}
+.option.correct{border-color:var(--ok);background:rgba(99,230,167,.12)}
+.option.wrong{border-color:var(--danger);background:rgba(255,123,138,.12)}
+.feedback{min-height:1.4em;margin-top:8px;font-weight:800}
+footer{padding:34px 0;border-top:1px solid var(--border);color:var(--muted)}
+/* annotation board */
+#inkLayer{position:absolute;inset:0;width:100%;height:100%;z-index:80;pointer-events:none;touch-action:none;overflow:visible}
+body.ink-mode #inkLayer{pointer-events:auto;cursor:crosshair}
+body.ink-mode{user-select:none}
+#inkToolbar{position:fixed;right:14px;bottom:14px;z-index:120;width:min(410px,calc(100vw - 20px));padding:11px;border:1px solid var(--border);border-radius:18px;background:rgba(5,15,27,.95);backdrop-filter:blur(16px);box-shadow:0 16px 50px rgba(0,0,0,.38)}
+.ink-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.ink-tools{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.ink-btn{border:1px solid var(--border);border-radius:10px;padding:7px 10px;background:rgba(255,255,255,.055);cursor:pointer;font-weight:800}
+.ink-btn.active{background:var(--accent);color:#042131}.ink-color{width:38px;height:36px;border:1px solid var(--border);border-radius:9px;background:transparent}
+#inkToolbar.collapsed .ink-tools,#inkToolbar.collapsed .ink-help{display:none}
+@media(max-width:960px){.hero-grid,.grid-2,.board-grid{grid-template-columns:1fr}.grid-3{grid-template-columns:1fr}.learning-strip{grid-template-columns:1fr 1fr}.readout{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){section{padding:56px 0}.mini-grid,.quiz-grid,.controls-grid,.learning-strip,.readout{grid-template-columns:1fr}.compare{grid-template-columns:1fr}.arrow{transform:rotate(90deg);text-align:center}.range-row{grid-template-columns:1fr}.section-head{display:block}#inkToolbar{right:6px;bottom:6px;width:calc(100vw - 12px)}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
+@media print{nav.sticky,#inkToolbar,.hero-actions,.tabs,.btn,.connection-btn{display:none!important}body{background:white;color:black}.card,.board-shell{box-shadow:none;background:white;color:black;border-color:#999}.muted{color:#333!important}.pane{display:block!important}}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<svg id="inkLayer"></svg>
+
+<header id="top">
+  <div class="container hero-grid">
+    <div>
+      <div class="eyebrow"><span class="pulse-dot"></span> Basic Electronics • Interactive semiconductor lesson</div>
+      <h1>From a <span class="grad">PN junction</span> to a practical <span class="grad">Zener regulator</span></h1>
+      <p class="lead">
+        Build the idea in the same way as a laboratory theorem: understand carrier motion, read the correct V–I curve,
+        predict whether the Zener turns ON, verify current splitting, then test line and load regulation.
+      </p>
+      <div class="hero-actions">
+        <button class="btn primary" onclick="document.querySelector('#foundation').scrollIntoView({behavior:'smooth'})">Start lesson</button>
+        <button class="btn" id="motionBtn">Pause animations</button>
+        <button class="btn" onclick="window.print()">Print / PDF</button>
+      </div>
+    </div>
+    <div class="hero-card">
+      <span class="tag">Concept map</span>
+      <h3 style="margin-top:12px">What students should be able to answer</h3>
+      <div class="mini-grid">
+        <div class="mini"><b>Why Zener?</b><span class="muted">Why a normal diode is not used as a reverse regulator.</span></div>
+        <div class="mini"><b>Drift vs diffusion</b><span class="muted">What moves carriers in a PN junction.</span></div>
+        <div class="mini"><b>Breakdown region</b><span class="muted">Why current can change while voltage stays nearly constant.</span></div>
+        <div class="mini"><b>Regulation</b><span class="muted">How IR splits into IZ and IL.</span></div>
+      </div>
+      <div class="formula" style="margin-bottom:0">I<sub>R</sub> = I<sub>Z</sub> + I<sub>L</sub> &nbsp;&nbsp; • &nbsp;&nbsp; V<sub>L</sub> ≈ V<sub>Z</sub></div>
+    </div>
+  </div>
+</header>
+
+<nav class="sticky">
+  <div class="container nav-inner">
+    <a href="#foundation">PN → Zener</a>
+    <a href="#transport">Drift & Diffusion</a>
+    <a href="#vi">V–I Characteristic</a>
+    <a href="#regulator">Regulator Concept</a>
+    <a href="#experiments">Regulation Experiments</a>
+    <a href="#worked">Worked Problems</a>
+    <a href="#breadboard">Virtual Breadboard</a>
+    <a href="#quiz">Quiz</a>
+  </div>
+</nav>
+
+<main>
+<section id="foundation">
+<div class="container">
+  <div class="section-head">
+    <div><div class="kicker">Foundation</div><h2>Why a Zener diode when the PN-junction diode already exists?</h2></div>
+    <p class="muted" style="max-width:430px">A Zener diode is not a different basic junction. It is a specially designed PN junction intended to operate safely in reverse breakdown.</p>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <h3>Ordinary PN-junction diode</h3>
+      <div class="statement">Main use: <b>forward conduction</b> for rectification and switching.</div>
+      <ul class="steps">
+        <li>Forward bias reduces the junction barrier.</li>
+        <li>Current rises strongly after the forward knee.</li>
+        <li>Reverse current is very small before breakdown.</li>
+        <li>Its reverse breakdown is normally not the intended operating region.</li>
+      </ul>
+    </div>
+    <div class="card glow">
+      <h3>Zener diode</h3>
+      <div class="statement">Main special use: <b>controlled reverse breakdown</b> for voltage reference / regulation.</div>
+      <ul class="steps">
+        <li>It is a heavily doped PN junction.</li>
+        <li>The depletion region is comparatively thin.</li>
+        <li>Reverse electric field becomes very strong near the designed breakdown voltage.</li>
+        <li>In the useful breakdown region, current changes markedly while voltage remains approximately V<sub>Z</sub>.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="compare" style="margin-top:18px">
+    <div class="card"><b>Ordinary diode question</b><br><span class="muted">“Will it conduct in the forward direction?”</span></div>
+    <div class="arrow">→</div>
+    <div class="card gold"><b>Zener regulator question</b><br><span class="muted">“Is it in reverse breakdown, and is I<sub>Z</sub> within the permitted range?”</span></div>
+  </div>
+</div>
+</section>
+
+<section id="transport">
+<div class="container">
+  <div class="section-head">
+    <div><div class="kicker">Carrier physics</div><h2>Drift and diffusion are common to both</h2></div>
+    <p class="muted" style="max-width:430px">The basic transport physics is the same because both devices contain a PN junction.</p>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <h3>Diffusion</h3>
+      <div class="statement">Cause: <b>carrier concentration gradient</b>.</div>
+      <p>Electrons diffuse from the N side toward the P side; holes diffuse from the P side toward the N side. This initial carrier movement helps form the depletion region.</p>
+      <div class="range-row"><b>Gradient</b><input id="grad" type="range" min="0" max="100" value="72"><div class="value-pill" id="gradVal">72%</div></div>
+      <div class="formula">High concentration → Low concentration</div>
+    </div>
+    <div class="card">
+      <h3>Drift</h3>
+      <div class="statement">Cause: <b>electric field</b> in the depletion region.</div>
+      <p>The fixed ions in the depletion region create an electric field. That field sweeps carriers and produces drift current.</p>
+      <div class="range-row"><b>Electric field</b><input id="field" type="range" min="0" max="100" value="58"><div class="value-pill" id="fieldVal">58%</div></div>
+      <div class="formula">Electric field E → Drift motion</div>
+    </div>
+  </div>
+  <div class="card glow" style="margin-top:18px">
+    <div class="grid-2">
+      <div class="circuit-wrap">
+        <svg viewBox="0 0 720 300">
+          <rect x="55" y="58" width="260" height="180" rx="20" fill="#183f6a"/>
+          <rect x="405" y="58" width="260" height="180" rx="20" fill="#6c2f48"/>
+          <rect id="depRegion" x="315" y="58" width="90" height="180" fill="#eef6ff" opacity=".18"/>
+          <text x="175" y="155" class="label" font-size="34">P</text>
+          <text x="525" y="155" class="label" font-size="34">N</text>
+          <text x="292" y="270" class="small-label">depletion region</text>
+          <g id="carrierDots"></g>
+          <line x1="300" y1="40" x2="420" y2="40" stroke="#ffcc66" stroke-width="3" marker-end="url(#arr)"/>
+          <text x="307" y="28" class="small-label">built-in E-field</text>
+          <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffcc66"/></marker></defs>
+        </svg>
+      </div>
+      <div>
+        <div class="tabs" id="transportTabs">
+          <button class="tab active" data-mode="eq">Equilibrium</button>
+          <button class="tab" data-mode="fwd">Forward bias</button>
+          <button class="tab" data-mode="rev">Reverse bias</button>
+          <button class="tab" data-mode="z">Zener breakdown</button>
+        </div>
+        <div id="transportText" class="statement"></div>
+        <div class="readout">
+          <div class="metric"><span>Diffusion</span><strong id="diffRead">Balanced</strong></div>
+          <div class="metric"><span>Drift</span><strong id="driftRead">Balanced</strong></div>
+          <div class="metric"><span>Barrier</span><strong id="barrierRead">Built-in</strong></div>
+          <div class="metric"><span>Net current</span><strong id="netRead">0</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section id="vi">
+<div class="container">
+  <div class="section-head">
+    <div><div class="kicker">Device characteristic</div><h2>Correct Zener V–I characteristic</h2></div>
+    <p class="muted" style="max-width:430px">Forward voltage/current are right/up. Reverse voltage/current are left/down. The regulation region is the nearly vertical breakdown branch around −V<sub>Z</sub>.</p>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="range-row"><b>Diode voltage</b><input id="vdSlider" type="range" min="-14" max="1" step=".1" value="-8"><div class="value-pill" id="vdVal">−8.0 V</div></div>
+      <div class="readout">
+        <div class="metric"><span>Region</span><strong id="viRegion">Reverse OFF</strong></div>
+        <div class="metric"><span>Current</span><strong id="viCurrent">tiny leakage</strong></div>
+        <div class="metric"><span>V<sub>Z</sub></span><strong>10 V</strong></div>
+        <div class="metric"><span>Regulating?</span><strong id="viUse">No</strong></div>
+      </div>
+      <div class="note" style="margin-top:13px">
+        <b>Sign convention:</b> on the graph, reverse current is plotted below the axis. In regulator calculations, I<sub>Z</sub> is normally written as a positive magnitude.
+      </div>
+    </div>
+    <div class="card">
+      <div class="circuit-wrap">
+        <svg viewBox="0 0 800 470">
+          <line x1="50" y1="225" x2="750" y2="225" class="axis"/>
+          <line x1="400" y1="35" x2="400" y2="425" class="axis"/>
+          <polygon points="750,225 737,218 737,232" fill="#7d92aa"/><polygon points="50,225 63,218 63,232" fill="#7d92aa"/>
+          <polygon points="400,35 393,48 407,48" fill="#7d92aa"/><polygon points="400,425 393,412 407,412" fill="#7d92aa"/>
+          <text x="705" y="205" class="label">V<tspan baseline-shift="sub" font-size="12">F</tspan></text>
+          <text x="62" y="205" class="label">V<tspan baseline-shift="sub" font-size="12">R</tspan></text>
+          <text x="415" y="55" class="label">I<tspan baseline-shift="sub" font-size="12">F</tspan></text>
+          <text x="415" y="410" class="label">I<tspan baseline-shift="sub" font-size="12">R</tspan></text>
+          <line x1="165" y1="70" x2="165" y2="405" stroke="#ffcc66" stroke-width="2" stroke-dasharray="7 7"/>
+          <text x="118" y="447" fill="#ffcc66" font-size="17">VZ = 10 V</text>
+          <path d="M395 225 C330 227 275 228 220 229 C195 230 180 231 168 233" class="chart-line"/>
+          <path d="M168 233 C165 245 163 260 160 282 C157 315 154 350 150 395" class="chart-line"/>
+          <path d="M400 225 C470 225 520 224 560 221 C590 217 610 205 625 180 C645 145 660 100 672 60" class="chart-line"/>
+          <text x="73" y="322" fill="#ffcc66" font-size="16" font-weight="800">Breakdown region</text>
+          <text x="73" y="344" class="small-label">useful for regulation</text>
+          <line x1="145" y1="285" x2="188" y2="285" stroke="#ffcc66" stroke-width="2"/><text x="194" y="291" fill="#ffcc66" font-size="14">IZ(min)</text>
+          <line x1="140" y1="365" x2="188" y2="365" stroke="#ff7b8a" stroke-width="2"/><text x="194" y="371" fill="#ff7b8a" font-size="14">IZ(max)</text>
+          <circle id="viPoint" cx="214" cy="229" r="9" fill="#ff7b8a" stroke="#fff" stroke-width="3"/>
+          <text id="viPointText" x="228" y="211" class="label" font-size="15">Operating point</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section id="regulator">
+<div class="container">
+  <div class="section-head">
+    <div><div class="kicker">Core regulator concept</div><h2>Understand the current split before doing calculations</h2></div>
+    <p class="muted" style="max-width:430px">This is the regulator equivalent of “remove the load, find VTH, find RTH, reconnect the load”: one clear procedure used every time.</p>
+  </div>
+
+  <div class="learning-strip">
+    <div class="learn-card"><div class="badge-num">1</div><b>Predict</b>Ignore the Zener temporarily and find the divider voltage.</div>
+    <div class="learn-card"><div class="badge-num">2</div><b>Decide ON/OFF</b>Compare that voltage with V<sub>Z</sub>.</div>
+    <div class="learn-card"><div class="badge-num">3</div><b>When ON</b>Use V<sub>out</sub>≈V<sub>Z</sub>.</div>
+    <div class="learn-card"><div class="badge-num">4</div><b>Apply KCL</b>I<sub>R</sub>=I<sub>Z</sub>+I<sub>L</sub>.</div>
+  </div>
+
+  <div class="grid-2" style="margin-top:20px">
+    <div class="card">
+      <span class="tag">The repeatable method</span>
+      <h3 style="margin-top:10px">Step-by-step regulator procedure</h3>
+      <ol class="steps">
+        <li>Temporarily remove the Zener branch and calculate <b>V<sub>open</sub>=V<sub>i</sub>R<sub>L</sub>/(R<sub>S</sub>+R<sub>L</sub>)</b>.</li>
+        <li>If V<sub>open</sub>&lt;V<sub>Z</sub>, the Zener is OFF and V<sub>out</sub>=V<sub>open</sub>.</li>
+        <li>If V<sub>open</sub>≥V<sub>Z</sub>, test the breakdown solution V<sub>out</sub>≈V<sub>Z</sub>.</li>
+        <li>Calculate I<sub>R</sub>=(V<sub>i</sub>−V<sub>Z</sub>)/R<sub>S</sub>.</li>
+        <li>Calculate I<sub>L</sub>=V<sub>Z</sub>/R<sub>L</sub>.</li>
+        <li>Then I<sub>Z</sub>=I<sub>R</sub>−I<sub>L</sub>. Verify I<sub>Z</sub> and Zener power.</li>
+      </ol>
+    </div>
+    <div class="card glow">
+      <span class="tag">Original network → operating model</span>
+      <h3 style="margin-top:10px">What each element is doing</h3>
+      <div class="grid-3">
+        <div class="mini"><b>R<sub>S</sub></b><span class="muted">Limits the current arriving at the output node.</span></div>
+        <div class="mini"><b>Zener</b><span class="muted">Absorbs the current not required by the load.</span></div>
+        <div class="mini"><b>R<sub>L</sub></b><span class="muted">Takes load current at approximately V<sub>Z</sub>.</span></div>
+      </div>
+      <div class="formula">I<sub>R</sub> = I<sub>Z</sub> + I<sub>L</sub></div>
+      <div class="statement">The Zener is a <b>shunt regulator</b> because it is connected in parallel with the load.</div>
+    </div>
+  </div>
+
+  <div class="card board-shell" style="margin-top:20px">
+    <div class="grid-2">
+      <div>
+        <span class="tag">Live circuit</span>
+        <h3 style="margin-top:10px">Move one parameter and watch the current redistribute</h3>
+        <div class="controls-grid">
+          <div><div class="range-row"><b>V<sub>i</sub></b><input id="rVi" type="range" min="0" max="50" step=".1" value="16"><div class="value-pill" id="rViVal">16.0 V</div></div></div>
+          <div><div class="range-row"><b>R<sub>S</sub></b><input id="rRs" type="range" min="100" max="3000" step="10" value="1000"><div class="value-pill" id="rRsVal">1.00 kΩ</div></div></div>
+          <div><div class="range-row"><b>R<sub>L</sub></b><input id="rRl" type="range" min="150" max="8000" step="10" value="3000"><div class="value-pill" id="rRlVal">3.00 kΩ</div></div></div>
+          <div><div class="range-row"><b>V<sub>Z</sub></b><input id="rVz" type="range" min="3" max="15" step=".1" value="10"><div class="value-pill" id="rVzVal">10.0 V</div></div></div>
+        </div>
+        <div class="readout">
+          <div class="metric"><span>Vopen</span><strong id="rVopen">12.00 V</strong></div>
+          <div class="metric"><span>Vout</span><strong id="rVout">10.00 V</strong></div>
+          <div class="metric"><span>IR</span><strong id="rIr">6.00 mA</strong></div>
+          <div class="metric"><span>IL</span><strong id="rIl">3.33 mA</strong></div>
+          <div class="metric"><span>IZ</span><strong id="rIz">2.67 mA</strong></div>
+          <div class="metric"><span>PZ</span><strong id="rPz">26.7 mW</strong></div>
+          <div class="metric"><span>KCL</span><strong id="rKcl">PASS</strong></div>
+          <div class="metric"><span>State</span><strong id="rState">ON</strong></div>
+        </div>
+        <div id="rBanner" class="state"></div>
+      </div>
+      <div class="circuit-wrap">
+        <svg viewBox="0 0 820 470">
+          <line x1="90" y1="110" x2="205" y2="110" class="wire"/>
+          <polyline points="205,110 225,87 250,133 275,87 300,133 325,87 350,110" class="resistor"/>
+          <line x1="350" y1="110" x2="690" y2="110" class="wire"/>
+          <line x1="90" y1="110" x2="90" y2="360" class="wire"/><line x1="90" y1="360" x2="690" y2="360" class="wire"/>
+          <line x1="455" y1="110" x2="455" y2="184" class="wire"/>
+          <polygon points="420,232 490,232 455,184" class="zener"/>
+          <polyline points="420,246 443,246 448,236 463,256 468,246 490,246" class="zener"/>
+          <line x1="455" y1="256" x2="455" y2="360" class="wire"/>
+          <line x1="650" y1="110" x2="650" y2="168" class="wire"/>
+          <rect x="622" y="168" width="56" height="118" rx="7" fill="none" stroke="#63e6a7" stroke-width="4"/>
+          <line x1="650" y1="286" x2="650" y2="360" class="wire"/>
+          <line x1="66" y1="210" x2="114" y2="210" stroke="#eef6ff" stroke-width="5"/><line x1="77" y1="240" x2="103" y2="240" stroke="#eef6ff" stroke-width="3"/>
+          <text x="39" y="188" class="label">Vi</text><text x="248" y="61" fill="#f6d37b" font-size="20" font-weight="800">Rs</text>
+          <text x="395" y="294" fill="#65d6ff" font-size="18">Zener</text><text x="690" y="235" fill="#63e6a7" font-size="20" font-weight="800">RL</text>
+          <circle cx="455" cy="110" r="7" fill="#fff"/><text x="474" y="94" class="small-label">Vout</text>
+          <text id="svgVout" x="535" y="94" fill="#63e6a7" font-size="19" font-weight="800">10.00 V</text>
+          <path id="irPath" d="M120 110 L195 110" class="current-path flow-cyan"/>
+          <path id="izPath" d="M455 138 L455 176" class="current-path flow-gold"/>
+          <path id="ilPath" d="M650 138 L650 160" class="current-path flow-green"/>
+          <text id="svgIr" x="126" y="145" fill="#56d6ff" font-size="17">IR 6.00 mA</text>
+          <text id="svgIz" x="475" y="168" fill="#ffcc66" font-size="17">IZ 2.67 mA</text>
+          <text id="svgIl" x="663" y="156" fill="#63e6a7" font-size="17">IL 3.33 mA</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section id="experiments">
+<div class="container">
+  <div class="section-head">
+    <div><div class="kicker">Virtual experiments</div><h2>Line regulation and load regulation — one variable at a time</h2></div>
+    <p class="muted" style="max-width:430px">This directly follows the two cases in the uploaded notes: variable V<sub>i</sub> with fixed R<sub>L</sub>, and variable R<sub>L</sub> with fixed V<sub>i</sub>.</p>
+  </div>
+  <div class="card glow">
+    <div class="tabs">
+      <button class="tab active" data-exp="linePane">Case 1 • Variable Vi, fixed RL</button>
+      <button class="tab" data-exp="loadPane">Case 2 • Variable RL, fixed Vi</button>
+      <button class="tab" data-exp="rangePane">Load-range problem</button>
+      <button class="tab" data-exp="designPane">Design check</button>
+    </div>
+
+    <div id="linePane" class="pane active">
+      <div class="grid-2">
+        <div>
+          <h3>Case 1 — Variable V<sub>i</sub>, fixed R<sub>L</sub></h3>
+          <div class="statement">Once regulation is established: R<sub>L</sub> fixed ⇒ V<sub>L</sub>≈V<sub>Z</sub> ⇒ I<sub>L</sub> approximately constant. An increase in V<sub>i</sub> mainly increases I<sub>Z</sub>.</div>
+          <div class="range-row"><b>Experiment V<sub>i</sub></b><input id="lineVi" type="range" min="0" max="35" step=".1" value="16"><div class="value-pill" id="lineViVal">16.0 V</div></div>
+          <div class="readout">
+            <div class="metric"><span>Vout</span><strong id="lineVout">10.00 V</strong></div>
+            <div class="metric"><span>IR</span><strong id="lineIr">6.00 mA</strong></div>
+            <div class="metric"><span>IL</span><strong id="lineIl">3.33 mA</strong></div>
+            <div class="metric"><span>IZ</span><strong id="lineIz">2.67 mA</strong></div>
+          </div>
+          <div class="formula">V<sub>i</sub> ↑ → I<sub>R</sub> ↑ → I<sub>Z</sub> ↑ &nbsp; while &nbsp; V<sub>L</sub>≈constant</div>
+          <div class="note">Turn-on boundary from the notes: <b id="lineTurn">13.33 V</b> for the present R<sub>S</sub>, R<sub>L</sub>, V<sub>Z</sub>.</div>
+        </div>
+        <div class="circuit-wrap">
+          <svg viewBox="0 0 700 400">
+            <line x1="65" y1="330" x2="650" y2="330" class="axis"/><line x1="65" y1="45" x2="65" y2="330" class="axis"/>
+            <text x="565" y="365" class="small-label">Input voltage Vi</text><text x="18" y="58" class="small-label">Vout</text>
+            <path id="lineCurve" class="chart-line" d=""/>
+            <line id="lineGuide" x1="65" y1="150" x2="650" y2="150" stroke="#ffcc66" stroke-width="2" stroke-dasharray="7 7"/>
+            <circle id="lineDot" cx="330" cy="150" r="8" fill="#ff7b8a" stroke="#fff" stroke-width="3"/>
+            <text x="82" id="lineVzText" y="142" fill="#ffcc66" font-size="15">Vz</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div id="loadPane" class="pane">
+      <div class="grid-2">
+        <div>
+          <h3>Case 2 — Fixed V<sub>i</sub>, variable R<sub>L</sub></h3>
+          <div class="statement">While regulating, I<sub>R</sub> is approximately fixed. If R<sub>L</sub> decreases, I<sub>L</sub> increases and the Zener current must decrease.</div>
+          <div class="range-row"><b>Experiment R<sub>L</sub></b><input id="loadRl" type="range" min="150" max="6000" step="10" value="3000"><div class="value-pill" id="loadRlVal">3.00 kΩ</div></div>
+          <div class="readout">
+            <div class="metric"><span>Vout</span><strong id="loadVout">10.00 V</strong></div>
+            <div class="metric"><span>IR</span><strong id="loadIr">6.00 mA</strong></div>
+            <div class="metric"><span>IL</span><strong id="loadIl">3.33 mA</strong></div>
+            <div class="metric"><span>IZ</span><strong id="loadIz">2.67 mA</strong></div>
+          </div>
+          <div class="formula">R<sub>L</sub> ↓ → I<sub>L</sub> ↑ → I<sub>Z</sub> ↓</div>
+          <div id="loadBanner" class="state"></div>
+        </div>
+        <div class="circuit-wrap">
+          <svg viewBox="0 0 700 400">
+            <line x1="65" y1="330" x2="650" y2="330" class="axis"/><line x1="65" y1="45" x2="65" y2="330" class="axis"/>
+            <text x="575" y="365" class="small-label">Load RL</text><text x="18" y="58" class="small-label">Vout</text>
+            <path id="loadCurve" class="chart-line" d=""/>
+            <line id="loadGuide" x1="65" y1="150" x2="650" y2="150" stroke="#ffcc66" stroke-width="2" stroke-dasharray="7 7"/>
+            <circle id="loadDot" cx="360" cy="150" r="8" fill="#ff7b8a" stroke="#fff" stroke-width="3"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div id="rangePane" class="pane">
+      <div class="grid-2">
+        <div>
+          <span class="tag">Notes example</span>
+          <h3 style="margin-top:10px">Find R<sub>L,min</sub> and R<sub>L,max</sub></h3>
+          <p>Use V<sub>i</sub>=50 V, R<sub>S</sub>=1 kΩ, V<sub>Z</sub>=10 V and I<sub>ZM</sub>=32 mA.</p>
+          <div class="formula">I<sub>R</sub>=(50−10)/1 kΩ = 40 mA</div>
+          <ol class="steps">
+            <li>At the heavy-load boundary, Zener current approaches zero, so I<sub>L,max</sub>≈40 mA.</li>
+            <li>R<sub>L,min</sub>=10/40 mA=<b>250 Ω</b>.</li>
+            <li>At I<sub>Z,max</sub>=32 mA, I<sub>L,min</sub>=40−32=<b>8 mA</b>.</li>
+            <li>R<sub>L,max</sub>=10/8 mA=<b>1.25 kΩ</b>.</li>
+          </ol>
+        </div>
+        <div class="card gold">
+          <h3>Interactive check</h3>
+          <div class="range-row"><b>R<sub>L</sub></b><input id="rangeRl" type="range" min="100" max="1800" step="10" value="500"><div class="value-pill" id="rangeRlVal">500 Ω</div></div>
+          <div class="readout">
+            <div class="metric"><span>IL</span><strong id="rangeIl">20.00 mA</strong></div>
+            <div class="metric"><span>IZ</span><strong id="rangeIz">20.00 mA</strong></div>
+            <div class="metric"><span>Vout</span><strong id="rangeVout">10.00 V</strong></div>
+            <div class="metric"><span>Range</span><strong id="rangeState">VALID</strong></div>
+          </div>
+          <div id="rangeBanner" class="state"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="designPane" class="pane">
+      <div class="grid-2">
+        <div>
+          <span class="tag">Advanced verification</span>
+          <h3 style="margin-top:10px">Check a specified regulator design</h3>
+          <p>The notes use V<sub>O</sub>=10 V, V<sub>i</sub>=20–30 V, I<sub>L</sub>=30–50 mA and I<sub>Z</sub>=20–40 mA.</p>
+          <div class="formula">Low input + maximum load constrains R<sub>S</sub> from above.</div>
+          <div class="formula">High input + minimum load constrains R<sub>S</sub> from below.</div>
+          <div class="note">The handwritten pages calculate approximately <b>143 Ω</b> and <b>286 Ω</b>. The verifier at right checks whether those two worst-case requirements overlap.</div>
+        </div>
+        <div class="card">
+          <div class="readout">
+            <div class="metric"><span>Low-input bound</span><strong>R<sub>S</sub> ≤ 142.9 Ω</strong></div>
+            <div class="metric"><span>High-input bound</span><strong>R<sub>S</sub> ≥ 285.7 Ω</strong></div>
+          </div>
+          <div class="warn" style="margin-top:14px"><b>No common resistor value satisfies both selected worst-case limits.</b><br>This is a useful design-check lesson: calculate both corners before selecting R<sub>S</sub>.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section id="worked">
+<div class="container">
+  <div class="section-head">
+    <div><div class="kicker">Worked example</div><h2>Do the ON/OFF prediction first — then solve</h2></div>
+    <p class="muted" style="max-width:430px">This follows the 16 V, 1 kΩ, 3 kΩ, 10 V example from the notes.</p>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <span class="tag">Given</span>
+      <div class="mini-grid">
+        <div class="mini"><b>V<sub>i</sub>=16 V</b></div><div class="mini"><b>R<sub>S</sub>=1 kΩ</b></div>
+        <div class="mini"><b>R<sub>L</sub>=3 kΩ</b></div><div class="mini"><b>V<sub>Z</sub>=10 V</b></div>
+      </div>
+      <div class="statement" style="margin-top:14px">
+        First ignore the Zener: V<sub>open</sub>=16×3/(1+3)=<b>12 V</b>. Since 12 V&gt;10 V, the Zener can turn ON.
+      </div>
+      <button class="btn ok" id="revealWorked" style="margin-top:14px">Reveal solution</button>
+    </div>
+    <div class="card glow">
+      <div id="workedSolution" style="display:none">
+        <ol class="steps">
+          <li>V<sub>out</sub>=V<sub>Z</sub>=10 V.</li>
+          <li>V<sub>R</sub>=V<sub>i</sub>−V<sub>Z</sub>=16−10=<b>6 V</b>.</li>
+          <li>I<sub>R</sub>=6/1 kΩ=<b>6 mA</b>.</li>
+          <li>I<sub>L</sub>=10/3 kΩ=<b>3.33 mA</b>.</li>
+          <li>I<sub>Z</sub>=6−3.33=<b>2.67 mA</b>.</li>
+          <li>P<sub>Z</sub>=10×2.67 mA=<b>26.7 mW</b>.</li>
+        </ol>
+        <div class="ok-note"><b>Final:</b> V<sub>L</sub>=10 V, I<sub>R</sub>=6 mA, I<sub>L</sub>=3.33 mA, I<sub>Z</sub>=2.67 mA, P<sub>Z</sub>=26.7 mW.</div>
+      </div>
+      <div id="workedPrompt" class="muted">Predict first, then reveal the calculation.</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section id="breadboard">
+<div class="container">
+  <div class="section-head">
+    <div><div class="kicker">Virtual practical lab</div><h2>Build the Zener regulator on a guided breadboard</h2></div>
+    <p class="muted" style="max-width:430px">Same learning style as the earlier network-theorems lab: make the connections, power the circuit, select the meter reading, and record observations.</p>
+  </div>
+  <div class="card board-shell">
+    <div class="board-grid">
+      <div class="breadboard">
+        <div style="font-weight:900;margin:0 20px 10px">Virtual breadboard — 16 V source, 1 kΩ series resistor, 10 V Zener, 3 kΩ load</div>
+        <div class="bb-rail red"></div>
+        <div class="bb-center">
+          <div class="bb-gap"></div>
+          <div class="bb-component" style="width:74px;left:190px;top:72px"></div>
+          <div style="position:absolute;left:195px;top:40px;font-weight:900">Rₛ 1 kΩ</div>
+          <div class="bb-component" style="width:74px;left:465px;top:190px;transform:rotate(90deg)"></div>
+          <div style="position:absolute;left:525px;top:180px;font-weight:900">Rₗ 3 kΩ</div>
+          <div class="bb-zener" style="left:360px;top:150px"></div>
+          <div style="position:absolute;left:352px;top:217px;font-weight:900">Zener 10 V</div>
+          <div class="bb-wire hidden" id="w1" style="width:150px;left:70px;top:82px;background:#e74b57;transform:rotate(0deg)"></div>
+          <div class="bb-wire hidden" id="w2" style="width:128px;left:280px;top:82px;background:#e74b57;transform:rotate(20deg)"></div>
+          <div class="bb-wire hidden" id="w3" style="width:128px;left:400px;top:115px;background:#2588d8;transform:rotate(77deg)"></div>
+          <div class="bb-wire hidden" id="w4" style="width:118px;left:510px;top:112px;background:#39a76f;transform:rotate(82deg)"></div>
+          <div class="bb-wire hidden" id="w5" style="width:405px;left:120px;top:235px;background:#2f3944;transform:rotate(0deg)"></div>
+        </div>
+        <div class="bb-rail blue"></div>
+        <div class="note" style="color:#544000;background:#fff5bf;border-color:#ddc45d;margin:10px 20px">
+          Hardware rule: <b>Zener cathode goes to Vout; anode goes to ground</b> for reverse-bias regulation.
+        </div>
+      </div>
+      <div>
+        <div class="instrument">
+          <h4>DC power supply</h4>
+          <div class="display" id="supplyDisplay">16.00 V</div>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+            <button class="power" id="powerBtn">POWER OFF</button>
+            <input id="supplySlider" type="range" min="0" max="25" step=".1" value="16" style="flex:1">
+          </div>
+        </div>
+        <div class="instrument">
+          <h4>Digital multimeter</h4>
+          <div class="display" id="meterDisplay">0.000 V</div>
+          <div class="tabs" style="margin-bottom:0">
+            <button class="tab active" data-meter="vout">Vout</button>
+            <button class="tab" data-meter="vrs">VRS</button>
+            <button class="tab" data-meter="iz">IZ</button>
+          </div>
+        </div>
+        <div class="instrument">
+          <h4>Connection trainer</h4>
+          <div class="connection-list">
+            <button class="connection-btn" data-wire="w1">1. Supply + → series resistor</button>
+            <button class="connection-btn" data-wire="w2">2. Resistor → Vout node</button>
+            <button class="connection-btn" data-wire="w3">3. Vout → Zener cathode</button>
+            <button class="connection-btn" data-wire="w4">4. Vout → load resistor</button>
+            <button class="connection-btn" data-wire="w5">5. Common return → supply −</button>
+          </div>
+          <div id="buildState" class="state bad">0 / 5 connections completed.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <h3>Observation table</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn ok" id="addObs">Add current reading</button>
+      <button class="btn" id="clearObs">Clear table</button>
+    </div>
+    <div class="obs-wrap">
+      <table>
+        <thead><tr><th>Vi (V)</th><th>Vout (V)</th><th>VRS (V)</th><th>IR (mA)</th><th>IL (mA)</th><th>IZ (mA)</th><th>Observation</th></tr></thead>
+        <tbody id="obsBody"></tbody>
+      </table>
+    </div>
+    <div class="ok-note" style="margin-top:14px"><b>Expected result:</b> over the regulating region, Vout remains approximately equal to the Zener voltage even though the input or load changes.</div>
+  </div>
+</div>
+</section>
+
+<section id="quiz">
+<div class="container">
+  <div class="section-head">
+    <div><div class="kicker">Self-check</div><h2>Six quick questions</h2></div>
+    <div class="metric"><span>Your score</span><strong id="score">0 / 6</strong></div>
+  </div>
+  <div class="quiz-grid" id="quizGrid"></div>
+  <button class="btn" id="resetQuiz" style="margin-top:16px">Reset quiz</button>
+</div>
+</section>
+</main>
+
+<footer><div class="container">Zener Diode Interactive Lesson • Carrier physics • Correct V–I curve • Shunt regulator • Virtual practical lab • Offline</div></footer>
+
+<div id="inkToolbar">
+  <div class="ink-head">
+    <div><b>Digital board pen</b><div class="muted" style="font-size:.75rem">Annotate while teaching</div></div>
+    <button class="ink-btn" id="inkCollapse">−</button>
+  </div>
+  <div class="ink-tools">
+    <button class="ink-btn" id="inkToggle">Pen OFF</button>
+    <input class="ink-color" id="inkColor" type="color" value="#ffcc66">
+    <input id="inkSize" type="range" min="2" max="12" value="4" style="width:90px">
+    <button class="ink-btn" id="inkUndo">Undo</button>
+    <button class="ink-btn" id="inkClear">Clear</button>
+  </div>
+  <div class="ink-help muted" style="font-size:.75rem;margin-top:7px">Turn Pen ON and draw anywhere. Works with mouse or touch.</div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-innerHeight;$('#progress').style.width=(h?scrollY/h*100:0)+'%'});
+
+// motion control
+let paused=false;
+$('#motionBtn').onclick=()=>{paused=!paused;document.body.classList.toggle('paused',paused);$('#motionBtn').textContent=paused?'Resume animations':'Pause animations'};
+const pauseStyle=document.createElement('style'); pauseStyle.textContent='.paused *{animation-play-state:paused!important}'; document.head.appendChild(pauseStyle);
+
+// transport animation
+function buildCarriers(){
+  const g=$('#carrierDots'); if(g.children.length)return;
+  const pts=[
+    ['h',95,100],['h',145,185],['h',210,110],['h',265,205],
+    ['e',455,100],['e',510,185],['e',570,110],['e',620,205]
+  ];
+  pts.forEach((p,i)=>{
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',p[1]);c.setAttribute('cy',p[2]);c.setAttribute('r',8);
+    c.setAttribute('fill',p[0]==='e'?'#56d6ff':'#ffcc66');
+    c.dataset.x=p[1];c.dataset.y=p[2];c.dataset.type=p[0];c.dataset.i=i;g.appendChild(c);
+  });
+}
+let transportMode='eq';
+const transportText={
+  eq:['At equilibrium, diffusion and drift oppose one another. The net external current is zero.','Balanced','Balanced','Built-in','0'],
+  fwd:['Forward bias lowers the junction barrier. Majority-carrier diffusion rises strongly.','High','Lower relative role','Reduced','Forward'],
+  rev:['Reverse bias raises the barrier. Majority-carrier diffusion is suppressed and the electric field sweeps minority carriers.','Very low','Dominant','Increased','Small reverse'],
+  z:['In a heavily doped Zener junction, the thin depletion region supports a very strong reverse electric field near breakdown.','Low','Very strong field','Breakdown','Large reverse']
+};
+function updateTransport(){
+  $('#gradVal').textContent=$('#grad').value+'%'; $('#fieldVal').textContent=$('#field').value+'%';
+  const d=transportText[transportMode]; $('#transportText').textContent=d[0];$('#diffRead').textContent=d[1];$('#driftRead').textContent=d[2];$('#barrierRead').textContent=d[3];$('#netRead').textContent=d[4];
+  const dep=transportMode==='fwd'?60:transportMode==='rev'?118:transportMode==='z'?48:90;
+  $('#depRegion').setAttribute('x',360-dep/2);$('#depRegion').setAttribute('width',dep);
+  const grad=+$('#grad').value/100, field=+$('#field').value/100;
+  $$('#carrierDots circle').forEach(c=>{
+    const x=+c.dataset.x,y=+c.dataset.y,t=c.dataset.type;
+    let dx=0;
+    if(transportMode==='eq') dx=(t==='e'?-1:1)*(4*field-5*grad);
+    if(transportMode==='fwd') dx=t==='e'?-20*grad:20*grad;
+    if(transportMode==='rev') dx=t==='e'?18*field:-18*field;
+    if(transportMode==='z') dx=t==='e'?34*field:-34*field;
+    c.setAttribute('cx',x+dx); c.setAttribute('cy',y+(+c.dataset.i%2?4:-4)*grad);
+  });
+}
+buildCarriers(); updateTransport();
+$('#grad').oninput=updateTransport; $('#field').oninput=updateTransport;
+$$('#transportTabs .tab').forEach(b=>b.onclick=()=>{$$('#transportTabs .tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');transportMode=b.dataset.mode;updateTransport()});
+
+// correct VI operating point
+function updateVI(){
+  const v=+$('#vdSlider').value,vz=10;
+  $('#vdVal').textContent=(v<0?'−'+Math.abs(v).toFixed(1):v.toFixed(1))+' V';
+  let reg,cur,use,cx,cy;
+  if(v>=0){
+    if(v<.6){reg='Forward below knee';cur='very small';use='No';cx=400+v/.6*160;cy=225}
+    else{const n=Math.min(1,(v-.6)/.4);reg='Forward conduction';cur='+'+(2+48*Math.pow(n,1.8)).toFixed(1)+' mA';use='No';cx=560+n*112;cy=221-n*161}
+  }else if(v>-vz){const f=Math.abs(v)/vz;reg='Reverse before breakdown';cur='tiny leakage';use='No';cx=400-f*232;cy=225+f*8}
+  else{const ex=Math.min(4,Math.abs(v)-vz);reg='Zener breakdown';cur='−'+(2+10.5*ex).toFixed(1)+' mA';use='Yes';cx=168-ex*4.5;cy=233+Math.min(162,ex*40.5)}
+  $('#viRegion').textContent=reg;$('#viCurrent').textContent=cur;$('#viUse').textContent=use;
+  $('#viPoint').setAttribute('cx',cx);$('#viPoint').setAttribute('cy',cy);
+  $('#viPointText').setAttribute('x',Math.min(650,cx+14));$('#viPointText').setAttribute('y',Math.max(55,cy-15));
+}
+$('#vdSlider').oninput=updateVI; updateVI();
+
+// regulator math
+function solveZener(vi,rs,rl,vz){
+  const vopen=vi*rl/(rs+rl);
+  if(vopen < vz || vi<=vz){
+    const i=vi/(rs+rl)*1000;
+    return {state:'OFF',vopen,vout:vopen,ir:i,il:i,iz:0,pz:0};
+  }
+  const ir=(vi-vz)/rs*1000, il=vz/rl*1000, iz=ir-il;
+  if(iz<0){
+    const i=vi/(rs+rl)*1000;
+    return {state:'OFF',vopen,vout:vopen,ir:i,il:i,iz:0,pz:0};
+  }
+  return {state:'ON',vopen,vout:vz,ir,il,iz,pz:vz*iz};
+}
+function fmtR(v){return v>=1000?(v/1000).toFixed(2)+' kΩ':v.toFixed(0)+' Ω'}
+function updateReg(){
+  const vi=+$('#rVi').value,rs=+$('#rRs').value,rl=+$('#rRl').value,vz=+$('#rVz').value,s=solveZener(vi,rs,rl,vz);
+  $('#rViVal').textContent=vi.toFixed(1)+' V';$('#rRsVal').textContent=fmtR(rs);$('#rRlVal').textContent=fmtR(rl);$('#rVzVal').textContent=vz.toFixed(1)+' V';
+  $('#rVopen').textContent=s.vopen.toFixed(2)+' V';$('#rVout').textContent=s.vout.toFixed(2)+' V';$('#rIr').textContent=s.ir.toFixed(2)+' mA';$('#rIl').textContent=s.il.toFixed(2)+' mA';$('#rIz').textContent=s.iz.toFixed(2)+' mA';$('#rPz').textContent=s.pz.toFixed(1)+' mW';$('#rKcl').textContent=Math.abs(s.ir-s.il-s.iz)<.02?'PASS':'CHECK';$('#rState').textContent=s.state;
+  $('#svgVout').textContent=s.vout.toFixed(2)+' V';$('#svgIr').textContent='IR '+s.ir.toFixed(2)+' mA';$('#svgIl').textContent='IL '+s.il.toFixed(2)+' mA';$('#svgIz').textContent='IZ '+s.iz.toFixed(2)+' mA';
+  $('#izPath').classList.toggle('off',s.iz<.01);$('#irPath').classList.toggle('off',s.ir<.01);$('#ilPath').classList.toggle('off',s.il<.01);
+  const b=$('#rBanner');
+  if(s.state==='ON'){b.className='state';b.innerHTML='<b>Zener ON:</b> Vout is clamped near Vz. The current through Rs splits into IL and IZ.'}
+  else{b.className='state bad';b.innerHTML='<b>Zener OFF:</b> the divider voltage is below the Zener breakdown requirement, so Vout follows the Rs–RL divider.'}
+  updateLine();updateLoad();
+}
+['rVi','rRs','rRl','rVz'].forEach(id=>$('#'+id).oninput=updateReg);
+
+// experiment tabs
+$$('#experiments .tab[data-exp]').forEach(b=>b.onclick=()=>{$$('#experiments .tab[data-exp]').forEach(x=>x.classList.remove('active'));b.classList.add('active');$$('#experiments .pane').forEach(x=>x.classList.remove('active'));$('#'+b.dataset.exp).classList.add('active')});
+
+function updateLine(){
+  const vi=+$('#lineVi').value,rs=+$('#rRs').value,rl=+$('#rRl').value,vz=+$('#rVz').value,s=solveZener(vi,rs,rl,vz);
+  $('#lineViVal').textContent=vi.toFixed(1)+' V';$('#lineVout').textContent=s.vout.toFixed(2)+' V';$('#lineIr').textContent=s.ir.toFixed(2)+' mA';$('#lineIl').textContent=s.il.toFixed(2)+' mA';$('#lineIz').textContent=s.iz.toFixed(2)+' mA';
+  const turn=vz*(rs+rl)/rl;$('#lineTurn').textContent=turn.toFixed(2)+' V';
+  const x0=65,x1=650,y0=330,y1=45,xmax=35,ymax=Math.max(15,vz+3),pts=[];
+  for(let k=0;k<=80;k++){const vv=xmax*k/80,ss=solveZener(vv,rs,rl,vz),x=x0+(x1-x0)*vv/xmax,y=y0-(y0-y1)*Math.min(ymax,ss.vout)/ymax;pts.push((k?'L':'M')+x.toFixed(1)+' '+y.toFixed(1))}
+  $('#lineCurve').setAttribute('d',pts.join(' '));const yg=y0-(y0-y1)*vz/ymax;$('#lineGuide').setAttribute('y1',yg);$('#lineGuide').setAttribute('y2',yg);$('#lineVzText').setAttribute('y',yg-8);
+  $('#lineDot').setAttribute('cx',x0+(x1-x0)*vi/xmax);$('#lineDot').setAttribute('cy',y0-(y0-y1)*Math.min(ymax,s.vout)/ymax);
+}
+$('#lineVi').oninput=updateLine;
+
+function updateLoad(){
+  const vi=+$('#rVi').value,rs=+$('#rRs').value,rl=+$('#loadRl').value,vz=+$('#rVz').value,s=solveZener(vi,rs,rl,vz);
+  $('#loadRlVal').textContent=fmtR(rl);$('#loadVout').textContent=s.vout.toFixed(2)+' V';$('#loadIr').textContent=s.ir.toFixed(2)+' mA';$('#loadIl').textContent=s.il.toFixed(2)+' mA';$('#loadIz').textContent=s.iz.toFixed(2)+' mA';
+  const b=$('#loadBanner'); if(s.state==='ON'){b.className='state';b.innerHTML='<b>Regulating:</b> as the load takes more current, the Zener current decreases.'}else{b.className='state bad';b.innerHTML='<b>Regulation lost:</b> the load demand is too high for the available series current.'}
+  const r0=150,r1=6000,x0=65,x1=650,y0=330,y1=45,ymax=Math.max(15,vz+3),pts=[];
+  for(let k=0;k<=90;k++){const rr=r0+(r1-r0)*k/90,ss=solveZener(vi,rs,rr,vz),x=x0+(x1-x0)*(rr-r0)/(r1-r0),y=y0-(y0-y1)*Math.min(ymax,ss.vout)/ymax;pts.push((k?'L':'M')+x.toFixed(1)+' '+y.toFixed(1))}
+  $('#loadCurve').setAttribute('d',pts.join(' '));const yg=y0-(y0-y1)*vz/ymax;$('#loadGuide').setAttribute('y1',yg);$('#loadGuide').setAttribute('y2',yg);$('#loadDot').setAttribute('cx',x0+(x1-x0)*(rl-r0)/(r1-r0));$('#loadDot').setAttribute('cy',y0-(y0-y1)*Math.min(ymax,s.vout)/ymax);
+}
+$('#loadRl').oninput=updateLoad;
+
+function updateRange(){
+  const rl=+$('#rangeRl').value,vi=50,rs=1000,vz=10,izmax=32,s=solveZener(vi,rs,rl,vz);
+  $('#rangeRlVal').textContent=fmtR(rl);$('#rangeIl').textContent=s.il.toFixed(2)+' mA';$('#rangeIz').textContent=s.iz.toFixed(2)+' mA';$('#rangeVout').textContent=s.vout.toFixed(2)+' V';
+  const valid=rl>=250 && rl<=1250 && s.state==='ON' && s.iz<=izmax+.01;
+  $('#rangeState').textContent=valid?'VALID':'OUTSIDE';
+  const b=$('#rangeBanner');b.className='state '+(valid?'':'bad');b.innerHTML=valid?'<b>Inside the calculated range:</b> Zener is in the intended operating region for this notes example.':'<b>Outside the calculated range:</b> either the load is too heavy or Zener current exceeds the specified maximum.';
+}
+$('#rangeRl').oninput=updateRange;
+
+// worked reveal
+$('#revealWorked').onclick=()=>{const s=$('#workedSolution');const p=$('#workedPrompt');const open=s.style.display!=='block';s.style.display=open?'block':'none';p.style.display=open?'none':'block';$('#revealWorked').textContent=open?'Hide solution':'Reveal solution'};
+
+// breadboard
+let powerOn=false,meterMode='vout';
+const completed=new Set();
+$$('.connection-btn').forEach(btn=>btn.onclick=()=>{
+  const id=btn.dataset.wire;if(completed.has(id)){completed.delete(id);btn.classList.remove('done');$('#'+id).classList.add('hidden')}
+  else{completed.add(id);btn.classList.add('done');$('#'+id).classList.remove('hidden')}
+  $('#buildState').textContent=completed.size+' / 5 connections completed.';
+  $('#buildState').className='state '+(completed.size===5?'':'bad');
+  updateBench();
+});
+$('#powerBtn').onclick=()=>{powerOn=!powerOn;$('#powerBtn').classList.toggle('on',powerOn);$('#powerBtn').textContent=powerOn?'POWER ON':'POWER OFF';updateBench()};
+$('#supplySlider').oninput=()=>{$('#supplyDisplay').textContent=(+$('#supplySlider').value).toFixed(2)+' V';updateBench()};
+$$('[data-meter]').forEach(b=>b.onclick=()=>{$$('[data-meter]').forEach(x=>x.classList.remove('active'));b.classList.add('active');meterMode=b.dataset.meter;updateBench()});
+function benchSolve(){return solveZener(+$('#supplySlider').value,1000,3000,10)}
+function updateBench(){
+  const ready=powerOn && completed.size===5,s=benchSolve();
+  if(!ready){$('#meterDisplay').textContent=meterMode==='iz'?'0.000 mA':'0.000 V';return}
+  if(meterMode==='vout')$('#meterDisplay').textContent=s.vout.toFixed(3)+' V';
+  if(meterMode==='vrs')$('#meterDisplay').textContent=(s.vi-s.vout).toFixed(3)+' V';
+  if(meterMode==='iz')$('#meterDisplay').textContent=s.iz.toFixed(3)+' mA';
+}
+$('#addObs').onclick=()=>{
+  if(!(powerOn && completed.size===5)){alert('Complete all five connections and switch the supply ON first.');return}
+  const s=benchSolve(),tr=document.createElement('tr');
+  tr.innerHTML='<td>'+s.vi.toFixed(1)+'</td><td>'+s.vout.toFixed(2)+'</td><td>'+(s.vi-s.vout).toFixed(2)+'</td><td>'+s.ir.toFixed(2)+'</td><td>'+s.il.toFixed(2)+'</td><td>'+s.iz.toFixed(2)+'</td><td>'+(s.state==='ON'?'Regulated':'Not regulated')+'</td>';
+  $('#obsBody').appendChild(tr)
+};
+$('#clearObs').onclick=()=>$('#obsBody').innerHTML='';
+
+// quiz
+const quiz=[
+  ['A Zener diode is normally used as a regulator in which region?',['Forward conduction','Reverse breakdown','Zero bias'],1,'Reverse breakdown is the intended regulator region.'],
+  ['What primarily causes diffusion current?',['Electric field','Carrier concentration gradient','Load resistance'],1,'Diffusion is driven by a concentration gradient.'],
+  ['What primarily causes drift current?',['Electric field','Concentration gradient only','Forward resistance'],0,'Drift is caused by an electric field.'],
+  ['In the regulator, which equation is KCL at the output node?',['IR = IZ + IL','IZ = IR + IL','IL = IZ + IR'],0,'Series current splits into Zener current and load current.'],
+  ['With fixed RL, when Vi rises during regulation, what mainly rises?',['Vout only','IZ','RL'],1,'Vout stays near Vz; extra current is mainly absorbed by the Zener.'],
+  ['With fixed Vi, when RL decreases during regulation, what happens to IL?',['It increases','It decreases','It becomes zero'],0,'A smaller load resistance at nearly constant voltage draws more current.']
+];
+let score=0,answered=new Set();
+function renderQuiz(){
+  score=0;answered.clear();$('#score').textContent='0 / '+quiz.length;$('#quizGrid').innerHTML='';
+  quiz.forEach((q,i)=>{
+    const d=document.createElement('div');d.className='qcard';d.innerHTML='<b>Q'+(i+1)+'. '+q[0]+'</b><div class="options"></div><div class="feedback"></div>';
+    q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='btn option';b.textContent=o;b.onclick=()=>answerQuiz(i,j,d);d.querySelector('.options').appendChild(b)});
+    $('#quizGrid').appendChild(d)
+  })
+}
+function answerQuiz(i,j,card){
+  if(answered.has(i))return;answered.add(i);const q=quiz[i],opts=[...card.querySelectorAll('.option')];
+  opts.forEach((b,k)=>{if(k===q[2])b.classList.add('correct');else if(k===j)b.classList.add('wrong')});
+  if(j===q[2])score++;card.querySelector('.feedback').textContent=(j===q[2]?'✓ Correct. ':'✗ Review. ')+q[3];$('#score').textContent=score+' / '+quiz.length
+}
+$('#resetQuiz').onclick=renderQuiz;renderQuiz();
+
+// digital ink
+const ink=$('#inkLayer'), strokes=[]; let drawing=false,path=null,points=[];
+function resizeInk(){ink.setAttribute('viewBox','0 0 '+document.documentElement.scrollWidth+' '+document.documentElement.scrollHeight);ink.style.height=document.documentElement.scrollHeight+'px'}
+resizeInk();addEventListener('resize',resizeInk);
+function pagePoint(e){const t=e.touches?e.touches[0]:e;return [t.clientX+scrollX,t.clientY+scrollY]}
+function startInk(e){if(!document.body.classList.contains('ink-mode'))return;drawing=true;points=[pagePoint(e)];path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('fill','none');path.setAttribute('stroke',$('#inkColor').value);path.setAttribute('stroke-width',$('#inkSize').value);path.setAttribute('stroke-linecap','round');path.setAttribute('stroke-linejoin','round');ink.appendChild(path);strokes.push(path);e.preventDefault()}
+function moveInk(e){if(!drawing)return;points.push(pagePoint(e));path.setAttribute('d',points.map((p,i)=>(i?'L':'M')+p[0]+' '+p[1]).join(' '));e.preventDefault()}
+function endInk(){drawing=false}
+ink.addEventListener('pointerdown',startInk);ink.addEventListener('pointermove',moveInk);ink.addEventListener('pointerup',endInk);ink.addEventListener('pointercancel',endInk);
+$('#inkToggle').onclick=()=>{document.body.classList.toggle('ink-mode');const on=document.body.classList.contains('ink-mode');$('#inkToggle').classList.toggle('active',on);$('#inkToggle').textContent=on?'Pen ON':'Pen OFF';resizeInk()};
+$('#inkUndo').onclick=()=>{const p=strokes.pop();if(p)p.remove()};$('#inkClear').onclick=()=>{strokes.splice(0).forEach(p=>p.remove())};$('#inkCollapse').onclick=()=>{$('#inkToolbar').classList.toggle('collapsed');$('#inkCollapse').textContent=$('#inkToolbar').classList.contains('collapsed')?'+':'−'};
+
+// init
+updateReg();updateLine();updateLoad();updateRange();updateBench();
+</script>
+</body>
+</html>
